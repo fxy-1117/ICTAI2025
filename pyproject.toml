@@ -1,7 +1,7 @@
 [project]
 name = "argumentation-neurosymbolic"
 version = "0.1.0"
-description = "Refactored neuro-symbolic argumentation experiments for STSB and SICK."
+description = "Neuro-symbolic argumentation experiments for STSB and SICK."
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [

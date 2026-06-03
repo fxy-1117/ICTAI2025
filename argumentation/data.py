@@ -76,7 +76,7 @@ def balanced_sample(
     seed: int,
     label_order: Sequence[str] | None = None,
 ) -> List[PairExample]:
-    # Match the original notebooks: np.random.seed + np.random.choice.
+    # Use NumPy's seeded choice so sampled examples are reproducible.
     np.random.seed(seed)
     by_label: Dict[str, List[PairExample]] = {}
     for example in examples:

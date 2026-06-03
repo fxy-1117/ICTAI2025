@@ -1,12 +1,11 @@
-"""Core neuro-symbolic functions extracted from the original Argumentation.ipynb.
+"""Core neuro-symbolic functions for AMR-to-logic conversion.
 
-This module intentionally keeps the original function bodies close to the notebook so
-that refactored experiments remain comparable. Runtime objects such as ``parser``,
-``converter`` and ``model`` are installed by ``argumentation.runtime``.
+Runtime objects such as ``parser``, ``converter`` and ``model`` are installed by
+``argumentation.runtime``.
 """
 
 
-# ---- Original notebook cell 0 ----
+# ---- Core imports ----
 
 import pandas as pd
 import nltk,re
@@ -31,7 +30,7 @@ from tqdm import tqdm
 
 
 
-# ---- Original notebook cell 6 ----
+# ---- Logic transformation utilities ----
 
 from amr_logic_converter.types import *
 from typing import Union, Tuple, Any, Optional, Dict
@@ -797,7 +796,7 @@ def transform_logic(x):
 
 
 
-# ---- Original notebook cell 7 ----
+# ---- AMR generation ----
 
 def generate_logic(data):
     tem  = []
@@ -821,7 +820,7 @@ def generate_logic(data):
 
 
 
-# ---- Original notebook cell 8 ----
+# ---- Formula normalization ----
 
 def combine(final,f = False):
     init = True
@@ -849,7 +848,7 @@ def combine(final,f = False):
 
 
 
-# ---- Original notebook cell 9 ----
+# ---- Formula combination ----
 
 import copy
 def transform(formula,X):
@@ -890,7 +889,7 @@ def transform(formula,X):
 
 
 
-# ---- Original notebook cell 10 ----
+# ---- SAT conversion ----
 
 def extract(formula,l= 0):
     and_list = []
@@ -936,7 +935,7 @@ def extract(formula,l= 0):
 
 
 
-# ---- Original notebook cell 11 ----
+# ---- Predicate utilities ----
 
 def get_merge(arg_set):
     merge_dict = []
@@ -956,7 +955,7 @@ def get_merge(arg_set):
 # Default score implementation. Runtime may replace this with a cached scorer.
 
 
-# ---- Original notebook cell 12 ----
+# ---- Candidate replacement utilities ----
 
 def score(s1,s2):
     sentences = [s1,s2]
@@ -967,7 +966,7 @@ def score(s1,s2):
 
 
 
-# ---- Original notebook cell 13 ----
+# ---- Proof helpers ----
 
 def pysat_formula(formula):
     tem_list = []
@@ -987,7 +986,7 @@ def pysat_formula(formula):
 
 
 
-# ---- Original notebook cell 14 ----
+# ---- Approximate proof search ----
 
 def subsitute(x,y,replaceX,replaceXX,maxx,i,j,thre,m = None,mm = False,neg =False):
 
@@ -1022,7 +1021,7 @@ def subsitute(x,y,replaceX,replaceXX,maxx,i,j,thre,m = None,mm = False,neg =Fals
 
 
 
-# ---- Original notebook cell 17 ----
+# ---- Logic post-processing ----
 
 no_ = []
 def prove(data, threshold):
@@ -1218,7 +1217,7 @@ def prove(data, threshold):
 
 
 
-# ---- Original notebook cell 19 ----
+# ---- Public transformation entry point ----
 
 def transform_logic(x):
     return (remove_duplicate_predicates(((merge_quant_predicates(

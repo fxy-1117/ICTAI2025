@@ -46,7 +46,7 @@ class NeuralScoreCache:
 
 
 class ArgumentationRuntime:
-    """Loads AMR/BGE models and installs them into the notebook-derived core."""
+    """Loads AMR/BGE models and installs them into the core pipeline."""
 
     def __init__(self, config: ExperimentConfig):
         self.config = config
