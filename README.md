@@ -20,6 +20,9 @@ cache/                  Local runtime cache, ignored by git
 results/                Local experiment outputs, ignored by git
 ```
 
+The `cache/` and `results/` directories are not stored in GitHub.  They are
+created automatically when an experiment is run.
+
 ## Setup
 
 Use Python 3.9 or newer.  Install the package dependencies with:
@@ -73,7 +76,8 @@ Two caches are used:
 - `cache/neural_scores_*.pkl`: phrase-pair neural similarity scores used by `prove`
 
 These caches make repeated runs across thresholds much faster.  They can be
-deleted safely if you want a fresh run.
+deleted safely if you want a fresh run.  If `cache/` does not exist locally, the
+script creates it and rebuilds the cache during the next run.
 
 ## Reproducibility Note
 
