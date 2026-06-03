@@ -1,14 +1,14 @@
 # Argumentation Neuro-Symbolic Experiments
 
-This repository contains the refactored Python implementation of the argumentation
-experiments from the original notebooks.  It keeps the AMR-to-logic and SAT-based
-reasoning pipeline, and focuses on reproducing the paper experiments for:
+This repository contains the Python implementation of the neuro-symbolic
+argumentation experiments for:
 
 - STSB parameter analysis
 - SICK parameter analysis
 
-The LLM prompt-ablation notebooks were removed from the experiment path so this
-codebase is centered on paper reproduction.
+The pipeline converts sentence pairs into AMR-based logical representations and
+uses approximate propositional reasoning to predict entailment, contradiction,
+or neutrality.
 
 ## Repository Layout
 
@@ -22,22 +22,14 @@ results/                Local experiment outputs, ignored by git
 
 ## Setup
 
-Use the same environment that can run the original notebook.  In the local
-workspace this was:
-
-```powershell
-C:\Users\fxy19\anaconda3\envs\eesnli\python.exe
-```
-
-Install the package dependencies if needed:
+Use Python 3.9 or newer.  Install the package dependencies with:
 
 ```powershell
 pip install -r requirements.txt
 ```
 
-The AMR parser may also need the same local `transition-amr-parser` setup used by
-the notebook.
-Two project-specific imports are expected from that setup:
+The AMR parser requires the project-specific AMR dependencies used by the
+pipeline:
 
 - `transition_amr_parser`
 - `amr_logic_converter`
@@ -50,24 +42,21 @@ scripts.
 STSB, paper-style sample size:
 
 ```powershell
-python scripts/run_experiment.py --dataset stsb --analysis parameter --sample-per-label 500 --seed 42 --output-dir results/stsb_parameter --cache-dir cache/stsb_parameter
+python scripts/run_experiment.py --dataset stsb --sample-per-label 500 --seed 42 --output-dir results/stsb_parameter --cache-dir cache/stsb_parameter
 ```
 
 SICK:
 
 ```powershell
-python scripts/run_experiment.py --dataset sick --analysis parameter --sample-per-label 500 --seed 42 --output-dir results/sick_parameter --cache-dir cache/sick_parameter
+python scripts/run_experiment.py --dataset sick --sample-per-label 500 --seed 42 --output-dir results/sick_parameter --cache-dir cache/sick_parameter
 ```
-
-The `--analysis parameter` flag is kept for command compatibility.  Parameter
-analysis is the only supported experiment mode in this repository.
 
 Dataset loading can still be length-filtered with `--min-length` and
 `--max-length`.  For example, this runs SICK parameter analysis on examples where
 both sentences have more than 5 and at most 20 tokens:
 
 ```powershell
-python scripts/run_experiment.py --dataset sick --analysis parameter --min-length 5 --max-length 20 --sample-per-label 500 --seed 42
+python scripts/run_experiment.py --dataset sick --min-length 5 --max-length 20 --sample-per-label 500 --seed 42
 ```
 
 By default the thresholds are:
@@ -84,17 +73,15 @@ Two caches are used:
 - `cache/neural_scores_*.pkl`: phrase-pair neural similarity scores used by `prove`
 
 These caches make repeated runs across thresholds much faster.  They can be
-deleted safely if you want a clean rerun.
+deleted safely if you want a fresh run.
 
 ## Reproducibility Note
 
-The original notebooks use random sampling through NumPy without a fixed seed.
-This refactor fixes the seed by default (`--seed 42`) so experiments are
-repeatable.  The exact paper numbers may differ slightly unless the original
-random sample is restored, but the code path matches the notebook core.
+The scripts use a fixed seed by default (`--seed 42`) so experiments are
+repeatable.  Reported scores can vary slightly with the sampled examples and
+available AMR/parser model versions.
 
-In the seed-42 rerun after refactoring, STSB at `tau=0.70` exactly matched the
-fixed-seed reference run:
+For the default seed-42 STSB parameter analysis, `tau=0.70` gives:
 
 ```text
 accuracy: 0.711
