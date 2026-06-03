@@ -1,0 +1,12 @@
+datasets
+fairseq
+nltk
+numpy
+pandas
+python-sat
+scikit-learn
+sentence-transformers
+sympy
+torch
+tqdm
+transformers
