@@ -45,13 +45,13 @@ scripts.
 STSB, paper-style sample size:
 
 ```powershell
-python scripts/run_experiment.py --dataset stsb --sample-per-label 500 --seed 42 --output-dir results/stsb_parameter --cache-dir cache/stsb_parameter
+python scripts/run_experiment.py --dataset stsb --sample-per-label 500 --seed 42
 ```
 
 SICK:
 
 ```powershell
-python scripts/run_experiment.py --dataset sick --sample-per-label 500 --seed 42 --output-dir results/sick_parameter --cache-dir cache/sick_parameter
+python scripts/run_experiment.py --dataset sick --sample-per-label 500 --seed 42
 ```
 
 Dataset loading can still be length-filtered with `--min-length` and
@@ -66,6 +66,13 @@ By default the thresholds are:
 
 ```text
 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00
+```
+
+Default outputs are written to:
+
+```text
+results/paper/stsb_parameter/
+results/paper/sick_parameter/
 ```
 
 ## Caching

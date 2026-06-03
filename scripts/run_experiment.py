@@ -25,13 +25,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--dataset-threshold", type=float, default=0.8)
     parser.add_argument("--amr-batch-size", type=int, default=32)
     parser.add_argument("--cache-dir", type=Path, default=Path("cache"))
-    parser.add_argument("--output-dir", type=Path, default=Path("results"))
+    parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--thresholds", type=parse_float_list, default=DEFAULT_THRESHOLDS)
     return parser
 
 
 def main() -> None:
     args = build_parser().parse_args()
+    output_dir = args.output_dir or Path("results") / "paper" / f"{args.dataset}_parameter"
+
     config = ExperimentConfig(
         dataset=args.dataset,
         seed=args.seed,
@@ -41,7 +43,7 @@ def main() -> None:
         sample_per_label=args.sample_per_label,
         amr_batch_size=args.amr_batch_size,
         cache_dir=args.cache_dir,
-        output_dir=args.output_dir,
+        output_dir=output_dir,
     )
 
     run_parameter_analysis(config, args.thresholds)
