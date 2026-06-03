@@ -71,8 +71,8 @@ By default the thresholds are:
 Default outputs are written to:
 
 ```text
-results/paper/stsb_parameter/
-results/paper/sick_parameter/
+results/stsb/
+results/sick/
 ```
 
 ## Caching

@@ -32,7 +32,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = build_parser().parse_args()
-    output_dir = args.output_dir or Path("results") / "paper" / f"{args.dataset}_parameter"
+    output_dir = args.output_dir or Path("results") / args.dataset
 
     config = ExperimentConfig(
         dataset=args.dataset,
