@@ -18,8 +18,6 @@ codebase is centered on paper reproduction.
 argumentation/          Core data loading, runtime, caching, and experiment code
 scripts/run_experiment.py
                         CLI for STSB/SICK parameter and length analyses
-scripts/compare_to_paper.py
-                        Small STSB tau=0.70 comparison helper
 cache/                  Local runtime cache, ignored by git
 results/                Local experiment outputs, ignored by git
 ```
@@ -111,10 +109,4 @@ fixed-seed reference run:
 accuracy: 0.711
 ent precision/recall/f1: 0.704062 / 0.728000 / 0.715831
 noent precision/recall/f1: 0.718427 / 0.694000 / 0.706002
-```
-
-## Compare With Paper STSB tau=0.70
-
-```powershell
-python scripts/compare_to_paper.py results/stsb_parameter/stsb_parameter_metrics_seed42.csv --threshold 0.70
 ```
