@@ -44,8 +44,7 @@ def main() -> None:
         output_dir=args.output_dir,
     )
 
-    metrics = run_parameter_analysis(config, args.thresholds)
-    print(metrics.to_string(index=False))
+    run_parameter_analysis(config, args.thresholds)
 
 
 if __name__ == "__main__":

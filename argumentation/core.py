@@ -1170,8 +1170,6 @@ def prove(data, threshold):
     entem_formula = True
     tem_formula = True
 
-    print(for_expressions)
-
     # Combine expressions with replacements
 #     for expr in for_expressions:
 #         entem_formula &= combine(transform(expr, replace_x))
@@ -1196,11 +1194,6 @@ def prove(data, threshold):
     # Convert to CNF for SAT solver
     cnf_ent = CNF(from_clauses=pysat_formula(final_formula))
     cnf_con1 = CNF(from_clauses=pysat_formula(final_formula11))
-
-    print(new_re)
-    print(replace_xx)
-    print(final_formula)
-    print(final_formula11)
 
     # Solve using SAT solver
     with Solver(name="Minisat22", bootstrap_with=cnf_ent) as solver_ent:

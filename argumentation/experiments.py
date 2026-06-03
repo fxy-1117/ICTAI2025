@@ -7,6 +7,7 @@ from typing import Dict, Sequence
 
 import pandas as pd
 from sklearn.metrics import accuracy_score, classification_report, precision_recall_fscore_support
+from tqdm.auto import tqdm
 
 from . import core
 from .config import ExperimentConfig
@@ -44,15 +45,15 @@ def build_logic_cache(
     missing = [sentence for sentence in unique_sentences if sentence not in logic_cache]
     log_path.parent.mkdir(parents=True, exist_ok=True)
     with log_path.open("a", encoding="utf-8") as log_file:
+        progress = tqdm(total=len(missing), desc="AMR", unit="sentence", disable=len(missing) == 0)
         for start in range(0, len(missing), runtime.config.amr_batch_size):
             batch = missing[start : start + runtime.config.amr_batch_size]
-            print(f"AMR {len(logic_cache) + len(batch)}/{len(unique_sentences)}", flush=True)
             try:
                 with contextlib.redirect_stdout(log_file), contextlib.redirect_stderr(log_file):
                     transformed = [core.transform_logic(x) for x in core.generate_logic(batch)[-2]]
                 logic_cache.update(dict(zip(batch, transformed)))
             except Exception as exc:
-                print(f"AMR batch failed, falling back to individual sentences: {exc!r}", flush=True)
+                print(f"AMR batch failed, falling back to individual sentences: {exc!r}", file=log_file)
                 for sentence in batch:
                     try:
                         with contextlib.redirect_stdout(log_file), contextlib.redirect_stderr(log_file):
@@ -64,6 +65,8 @@ def build_logic_cache(
             cache_path.parent.mkdir(parents=True, exist_ok=True)
             with cache_path.open("wb") as handle:
                 pickle.dump(logic_cache, handle)
+            progress.update(len(batch))
+        progress.close()
 
     return logic_cache
 
@@ -77,7 +80,8 @@ def predict_examples(
 ) -> pd.DataFrame:
     rows = []
     with log_path.open("a", encoding="utf-8") as log_file:
-        for item_id, example in enumerate(examples):
+        progress = tqdm(examples, desc=f"tau={threshold:.2f}", unit="pair")
+        for item_id, example in enumerate(progress):
             try:
                 left_logic = logic_cache.get(example.sentence1)
                 right_logic = logic_cache.get(example.sentence2)
@@ -121,8 +125,6 @@ def predict_examples(
                     "error": "",
                 }
             )
-            if (item_id + 1) % 50 == 0 or item_id + 1 == len(examples):
-                print(f"tau={threshold:.2f} predicted {item_id + 1}/{len(examples)}", flush=True)
     return pd.DataFrame(rows)
 
 
