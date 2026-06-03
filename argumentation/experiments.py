@@ -42,7 +42,7 @@ def build_logic_cache(
     else:
         logic_cache = {}
 
-    missing = [sentence for sentence in unique_sentences if sentence not in logic_cache]
+    missing = [sentence for sentence in unique_sentences if logic_cache.get(sentence) is None]
     log_path.parent.mkdir(parents=True, exist_ok=True)
     with log_path.open("a", encoding="utf-8") as log_file:
         progress = tqdm(total=len(missing), desc="AMR", unit="sentence", disable=len(missing) == 0)

@@ -49,7 +49,12 @@ def load_sick_examples(config: ExperimentConfig) -> List[PairExample]:
 
             if label == 0:
                 gold = "ent"
-                pair = (sentence_a, sentence_b)
+                if relation_ab == "A_entails_B":
+                    pair = (sentence_a, sentence_b)
+                elif relation_ba == "B_entails_A":
+                    pair = (sentence_b, sentence_a)
+                else:
+                    raise ValueError(f"Unexpected SICK entailment direction: {relation_ab!r}, {relation_ba!r}")
             elif label == 1:
                 gold = "neu"
                 if relation_ab == "A_neutral_B":
@@ -60,7 +65,12 @@ def load_sick_examples(config: ExperimentConfig) -> List[PairExample]:
                     raise ValueError(f"Unexpected SICK neutral direction: {relation_ab!r}, {relation_ba!r}")
             else:
                 gold = "con"
-                pair = (sentence_a, sentence_b)
+                if relation_ab == "A_contradicts_B":
+                    pair = (sentence_a, sentence_b)
+                elif relation_ba == "B_contradicts_A":
+                    pair = (sentence_b, sentence_a)
+                else:
+                    raise ValueError(f"Unexpected SICK contradiction direction: {relation_ab!r}, {relation_ba!r}")
 
             example = PairExample(pair[0], pair[1], gold, None)
             if _within_length(example, config.min_sentence_length, config.max_sentence_length):

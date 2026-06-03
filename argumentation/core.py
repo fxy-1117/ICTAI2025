@@ -8,6 +8,7 @@ Runtime objects such as ``parser``, ``converter`` and ``model`` are installed by
 # ---- Core imports ----
 
 import copy
+import logging
 import re
 from typing import Dict, List, Optional
 
@@ -29,6 +30,9 @@ from pysat.formula import CNF
 from pysat.solvers import Solver
 from sympy import Symbol
 from sympy.logic.boolalg import to_cnf
+
+
+logger = logging.getLogger(__name__)
 
 
 # ---- Logic transformation utilities ----
