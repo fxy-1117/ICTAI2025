@@ -43,18 +43,24 @@ def load_sick_examples(config: ExperimentConfig) -> List[PairExample]:
         for row in dataset:
             sentence_a = row["sentence_A"]
             sentence_b = row["sentence_B"]
-            relation = row["entailment_AB"]
+            relation_ab = str(row["entailment_AB"]).strip()
+            relation_ba = str(row["entailment_BA"]).strip()
             label = int(row["label"])
 
             if label == 0:
                 gold = "ent"
-                pair = (sentence_a, sentence_b) if relation == " A_entails_B" else (sentence_b, sentence_a)
+                pair = (sentence_a, sentence_b)
             elif label == 1:
                 gold = "neu"
-                pair = (sentence_a, sentence_b) if relation == " A_neutral_B" else (sentence_b, sentence_a)
+                if relation_ab == "A_neutral_B":
+                    pair = (sentence_a, sentence_b)
+                elif relation_ba == "B_neutral_A":
+                    pair = (sentence_b, sentence_a)
+                else:
+                    raise ValueError(f"Unexpected SICK neutral direction: {relation_ab!r}, {relation_ba!r}")
             else:
                 gold = "con"
-                pair = (sentence_a, sentence_b) if relation == " A_contradicts_B" else (sentence_b, sentence_a)
+                pair = (sentence_a, sentence_b)
 
             example = PairExample(pair[0], pair[1], gold, None)
             if _within_length(example, config.min_sentence_length, config.max_sentence_length):
