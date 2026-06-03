@@ -7,34 +7,31 @@ Runtime objects such as ``parser``, ``converter`` and ``model`` are installed by
 
 # ---- Core imports ----
 
-import pandas as pd
-import nltk,re
-from nltk.tokenize import word_tokenize
-from nltk import pos_tag, word_tokenize
+import copy
+import re
+from typing import Dict, List, Optional
+
 from amr_logic_converter import types
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import precision_score
-from sklearn.metrics import recall_score
-from sympy.logic.boolalg import to_cnf
-from sympy.abc import A, B,C
-import sympy
-from sklearn.metrics import classification_report
-from sympy import Symbol,simplify_logic
+from amr_logic_converter.types import (
+    All,
+    And,
+    Atom,
+    Clause,
+    Constant,
+    Exists,
+    Implies,
+    Not,
+    Or,
+    Predicate,
+    Variable,
+)
 from pysat.formula import CNF
 from pysat.solvers import Solver
-import numpy as np
-from tqdm import tqdm
-# import spacy
-# nlp = spacy.load("en_core_web_sm")
-
+from sympy import Symbol
+from sympy.logic.boolalg import to_cnf
 
 
 # ---- Logic transformation utilities ----
-
-from amr_logic_converter.types import *
-from typing import Union, Tuple, Any, Optional, Dict
-import re
 def strip_suffix(symbol: str) -> str:
     """
     Removes numerical suffixes and slashes from a predicate symbol.
@@ -702,17 +699,14 @@ def merge_ARG1_predicates(clause: Clause) -> Clause:
             if Y_str not in arg1_mapping:
                 arg1_mapping[Y_str] = []
             arg1_mapping[Y_str].append(Z_str)
-#         print(arg1_atoms)
         # Step 3: Identify and create merged :ARG1 atoms
         merged_arg1_atoms: List[Atom] = []
         atoms_to_remove = []
-        merging_done = False  # Flag to detect if any merging is done
         arg1_mapping_F: Dict[str, List[str]] = {}
         for atom in arg1_atoms:
             if len(atom.terms) != 2:
                 continue
             X, Y = atom.terms
-            X_str = str(X)
             Y_str = str(Y)
             if Y_str in arg1_mapping:
 
@@ -728,25 +722,20 @@ def merge_ARG1_predicates(clause: Clause) -> Clause:
                     )
                     if merged_atom not in merged_arg1_atoms:
                         merged_arg1_atoms.append(merged_atom)
-                        merging_done = True
                 # Mark the original :ARG1(X, Y) for removal
-#                 print(atom)
                     if Y_str not in arg1_mapping_F:
                         arg1_mapping_F[Y_str] = []
                     arg1_mapping_F[Y_str].append(Z_str)
                 atoms_to_remove.append(atom)
 
-#         print(merged_arg1_atoms)
         # Also, mark all :ARG1(Y, Z) atoms for removal
         for atom in arg1_atoms:
             if len(atom.terms) != 2:
                 continue
             Y, _ = atom.terms
             Y_str = str(Y)
-#             print(atom)
             if Y_str in arg1_mapping_F:
                 atoms_to_remove.append(atom)
-#             print(atoms_to_remove)
 
         if not merged_arg1_atoms:
             # No merging was done, do not recurse further
@@ -787,12 +776,7 @@ def merge_ARG1_predicates(clause: Clause) -> Clause:
     elif isinstance(clause, Atom):
         return clause
     else:
-        logger.warning(f"Unhandled clause type: {type(clause)}")
         return clause
-def transform_logic(x):
-    return (remove_duplicate_predicates(remove_specific_predicates((merge_quant_predicates(
-                                                       merge_name_predicates(merge_mod_predicates(flatten_and_operations_recursive
-                                                                             (transform_replace_constants(x)))))))))
 
 
 
@@ -803,7 +787,7 @@ def generate_logic(data):
     temm = []
     tem_token = []
     for sen in data:
-        tokens, positions = parser.tokenize(sen)
+        tokens, _ = parser.tokenize(sen)
         tem_token.append(tokens)
 
     annotations, machines = parser.parse_sentences(tem_token)
@@ -841,8 +825,6 @@ def combine(final,f = False):
                 init = init&~tem
         else:
             init = init&i
-#     print(init)
-
     return init
 
 
@@ -850,11 +832,8 @@ def combine(final,f = False):
 
 # ---- Formula combination ----
 
-import copy
 def transform(formula,X):
-#     print(X)
     final = copy.deepcopy(formula)
-#     print(final)÷
     for i in range(len(final)):
 
         if type(final[i]) == list:
@@ -864,23 +843,15 @@ def transform(formula,X):
                     continue
                 else:
                     final[i] = X["/".join([final[i][1],final[i][2],final[i][3]])]
-#
-
-#                     init = init
             else:
                 final[i] = transform(final[i],X)
 
-#                     else:
-
         else:
             if final[i] not in X:
-#                 print("he")
                 continue
 
             else:
                 final[i]  = X[final[i]]
-#     print(final)
-#     print(combine(final))
 
 
     return final
@@ -893,25 +864,18 @@ def transform(formula,X):
 
 def extract(formula,l= 0):
     and_list = []
-    var = {}
     arg = []
     if type(formula) == types.Not:
-#         print("ggg")
-#         return "neg","neg","neg"
         return [extract(formula.body)[0]],arg+extract(formula.body,1)[1]
-#     print(formula)
     if type(formula) != types.Atom:
         for i in formula.args:
             if type(i) == types.Not:
-#             return "neg","neg","neg"
                 and_list.append(extract(i.body)[0])
                 arg = arg+extract(i.body,1)[1]
 
             else:
-#             print(i)
                 tem = []
                 for j in range(0,len(i.terms)):
-#                 print(i.terms[j])
                     try:
                         tem.append(i.terms[j].symbol)
                     except:
@@ -922,7 +886,6 @@ def extract(formula,l= 0):
     else:
             tem = []
             for j in range(0,len(formula.terms)):
-#                 print(i.terms[j])
                 try:
                     tem.append(formula.terms[j].symbol)
                 except:
@@ -937,21 +900,6 @@ def extract(formula,l= 0):
 
 # ---- Predicate utilities ----
 
-def get_merge(arg_set):
-    merge_dict = []
-    for i in arg_set:
-        if i[2] == ":ARG":
-            for j in arg_set:
-                if j[2] == ":ARG":
-                    if i != j:
-                        if i[0] == j[1]:
-                            if [i[1],j[0]] not in merge_dict and [j[0],i[1]] not in merge_dict:
-
-                                merge_dict.append([i[1],j[0],i,j])
-    return merge_dict
-
-
-
 # Default score implementation. Runtime may replace this with a cached scorer.
 
 
@@ -959,7 +907,6 @@ def get_merge(arg_set):
 
 def score(s1,s2):
     sentences = [s1,s2]
-#                 print(sentences)
     embedding_1= model.encode(sentences[0], convert_to_tensor=True,show_progress_bar=False)
     embedding_2 = model.encode(sentences[1], convert_to_tensor=True,show_progress_bar=False)
     return util.pytorch_cos_sim(embedding_1, embedding_2)[0][0]
@@ -977,7 +924,6 @@ def pysat_formula(formula):
             tem_tem = []
             for j in i.replace("(","").replace(")","").split(" | "):
                 if j[0] == "~":
-#                 print(int(j[-1]))
                     tem_tem.append(int(j[2:])*-1)
                 elif j[0] == "x":
                     tem_tem.append(int(j[1:]))
@@ -988,19 +934,14 @@ def pysat_formula(formula):
 
 # ---- Approximate proof search ----
 
-def subsitute(x,y,replaceX,replaceXX,maxx,i,j,thre,m = None,mm = False,neg =False):
+def subsitute(x,y,replaceX,replaceXX,maxx,i,j,thre,m = None,mm = False):
 
     tems = score(x,y)
     xs,xe = i.split('/')[0],i.split('/')[1]
     ys,ye = j.split('/')[0],j.split('/')[1]
     temsw = (score(xe,ye) + score(xe,ys)+score(xs,ye)+score(xs,ys))/4
-#     temsn = nli(x, [y])['scores'][0]s
-    threhold = thre
-#     if temsn>0.5:
     finals = (tems+temsw)/2
-#     finals = tems
     if  finals >= thre:
-#             if tems>=0.8:
             if finals > maxx[i]:
 
                 maxx[i] = finals
@@ -1009,7 +950,6 @@ def subsitute(x,y,replaceX,replaceXX,maxx,i,j,thre,m = None,mm = False,neg =Fals
                     if i not in m:
                         m[i] = [y,j,x,finals]
                     else:
-#                     if tems>
                         m[i] = [y,j,x,finals]
                 return True
 
@@ -1028,7 +968,6 @@ def prove(data, threshold):
     # Initialize lists and dictionaries
     for_expressions = []
     check_args = []
-    check_variables = []
 
     replace_x = {}
     n = 1
@@ -1051,8 +990,6 @@ def prove(data, threshold):
                 n += 1
 
     check_args_main = []
-    check_variable_main = {}
-
     # Extract main arguments
     for_expr, check_args_main = extract(data[1])
 
@@ -1107,8 +1044,6 @@ def prove(data, threshold):
             replace_xx[key] = replace_x[key]
             max_dict[key] = 1
         else:
-            # Initialize temporary string
-            temp_j = " "
             # Iterate over replace_x to find replacements
             for j_key in replace_x:
                 # Check if the argument type exists in the template
@@ -1153,7 +1088,7 @@ def prove(data, threshold):
     new_re = {}
     for x_key in replace_x:
         replacement_found = False
-        for xx_key, xx_val in replace_xx.items():
+        for xx_val in replace_xx.values():
             if isinstance(xx_val, Not):
                 if ~xx_val == replace_x[x_key]:
                     new_re[x_key] = replace_x[x_key]
@@ -1165,23 +1100,10 @@ def prove(data, threshold):
         if not replacement_found:
             new_re[x_key] = True
 
-    # Initialize formulas
-    entem_formula = True
     tem_formula = True
 
-    # Combine expressions with replacements
-#     for expr in for_expressions:
-#         entem_formula &= combine(transform(expr, replace_x))
-
-    # Check if all max_dict values meet the threshold
-#     check_all = all(value >= threshold for value in max_dict.values())
-
-#     if check_all:
     for expr in for_expressions:
         tem_formula &= combine(transform(expr, new_re))
-#     else:
-#        for expr in for_expressions:
-#     tem_formula &= combine(transform(expr, new_re))
 
     # Combine main expressions
     formula_main = combine(transform(for_expr, replace_xx))
@@ -1205,10 +1127,6 @@ def prove(data, threshold):
     if not check_ent and check_con1:
         return "ent", max_dict
     elif not check_con1 and check_ent:
-#         for i in replace_x:
-#             if "possible" in i:
-#                 return "neu", max_dict
-
         return "con", max_dict
     elif not check_con1 and not check_ent:
         return "both", max_dict
