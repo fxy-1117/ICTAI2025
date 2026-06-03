@@ -1,17 +1,16 @@
 from __future__ import annotations
 
 import contextlib
-import csv
 import pickle
 from pathlib import Path
-from typing import Dict, Iterable, List, Sequence
+from typing import Dict, Sequence
 
 import pandas as pd
 from sklearn.metrics import accuracy_score, classification_report, precision_recall_fscore_support
 
 from . import core
 from .config import ExperimentConfig
-from .data import PairExample, balanced_sample, examples_for_length_bin, load_examples
+from .data import PairExample, balanced_sample, load_examples
 from .runtime import ArgumentationRuntime
 
 
@@ -189,37 +188,5 @@ def run_parameter_analysis(config: ExperimentConfig, thresholds: Sequence[float]
 
     result = pd.concat(all_metrics, ignore_index=True)
     result.to_csv(config.output_dir / f"{config.dataset_key}_parameter_metrics_seed{config.seed}.csv", index=False)
-    runtime.save()
-    return result
-
-
-def run_length_analysis(
-    config: ExperimentConfig,
-    threshold: float,
-    bins: Sequence[tuple[int, int]],
-) -> pd.DataFrame:
-    runtime = ArgumentationRuntime(config)
-    labels = ["ent", "noent"] if config.dataset_key == "stsb" else ["con", "ent", "neu"]
-    config.output_dir.mkdir(parents=True, exist_ok=True)
-    all_metrics = []
-
-    for lower, upper in bins:
-        pool = examples_for_length_bin(config, lower, upper)
-        examples = balanced_sample(pool, config.sample_per_label, config.seed, _sample_label_order(config.dataset_key))
-        label = f"{lower}-{upper}"
-        pd.DataFrame([e.__dict__ for e in examples]).to_csv(config.output_dir / f"{config.dataset_key}_length_{label}_sample_seed{config.seed}.csv", index=False)
-        log_path = config.output_dir / f"{config.dataset_key}_length_{label}_seed{config.seed}.log"
-        logic_cache = build_logic_cache(runtime, examples, _cache_name(config, examples, f"logic_length_{label}"), log_path)
-        predictions = predict_examples(examples, threshold, logic_cache, log_path, config.dataset_key)
-        predictions.to_csv(config.output_dir / f"{config.dataset_key}_length_{label}_predictions_seed{config.seed}.csv", index=False)
-        metrics = metric_table(predictions, labels)
-        metrics.insert(0, "threshold", threshold)
-        metrics.insert(0, "length_bin", label)
-        metrics.insert(0, "dataset", config.dataset_key)
-        all_metrics.append(metrics)
-        runtime.save()
-
-    result = pd.concat(all_metrics, ignore_index=True)
-    result.to_csv(config.output_dir / f"{config.dataset_key}_length_metrics_seed{config.seed}.csv", index=False)
     runtime.save()
     return result

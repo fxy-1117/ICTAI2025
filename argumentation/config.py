@@ -5,7 +5,6 @@ from pathlib import Path
 
 
 DEFAULT_THRESHOLDS = (0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00)
-DEFAULT_LENGTH_BINS = ((0, 10), (10, 15), (15, 20), (20, 100))
 
 
 @dataclass(frozen=True)

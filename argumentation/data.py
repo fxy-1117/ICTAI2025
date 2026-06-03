@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Sequence, Tuple
+from typing import Dict, List, Sequence
 
 import numpy as np
 from datasets import load_dataset
@@ -93,20 +93,3 @@ def balanced_sample(
         indices = np.random.choice(len(pool), per_label, replace=False)
         sampled.extend(pool[int(i)] for i in indices)
     return sampled
-
-
-def examples_for_length_bin(config: ExperimentConfig, lower: int, upper: int) -> List[PairExample]:
-    bin_config = ExperimentConfig(
-        dataset=config.dataset,
-        seed=config.seed,
-        dataset_threshold=config.dataset_threshold,
-        max_sentence_length=upper,
-        min_sentence_length=lower,
-        sample_per_label=config.sample_per_label,
-        amr_batch_size=config.amr_batch_size,
-        cache_dir=config.cache_dir,
-        output_dir=config.output_dir,
-        sentence_model_name=config.sentence_model_name,
-        amr_model_name=config.amr_model_name,
-    )
-    return load_examples(bin_config)
