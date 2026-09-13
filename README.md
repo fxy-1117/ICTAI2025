@@ -120,3 +120,9 @@ noent precision/recall/f1: 0.718427 / 0.694000 / 0.706002
   bibsource    = {dblp computer science bibliography, https://dblp.org}
 }
 ```
+
+## License
+
+The original code in this repository is licensed under the [MIT License](LICENSE).
+Third-party dependencies, datasets (including source-derived content), and
+pretrained models retain their respective licenses and terms.

@@ -3,6 +3,7 @@ name = "argumentation-neurosymbolic"
 version = "0.1.0"
 description = "Neuro-symbolic argumentation experiments for STSB and SICK."
 readme = "README.md"
+license = {file = "LICENSE"}
 requires-python = ">=3.9"
 dependencies = [
     "datasets",
